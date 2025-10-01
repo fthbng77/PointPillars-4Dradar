@@ -73,7 +73,8 @@ class PillarEncoder(nn.Module):
         y_offset_pi_center = pillars[:, :, 1:2] - (coors_batch[:, None, 2:3] * self.vy + self.y_offset) # (p1 + p2 + ... + pb, num_points, 1)
 
         # 3. encoder
-        features = torch.cat([pillars, offset_pt_center, x_offset_pi_center, y_offset_pi_center], dim=-1) # (p1 + p2 + ... + pb, num_points, 9)
+        features = torch.cat([pillars, offset_pt_center, x_offset_pi_center, y_offset_pi_center], dim=-1)  # 10 channels
+
         features[:, :, 0:1] = x_offset_pi_center # tmp
         features[:, :, 1:2] = y_offset_pi_center # tmp
         # In consitent with mmdet3d. 
@@ -232,7 +233,7 @@ class PointPillars(nn.Module):
                                         max_voxels=max_voxels)
         self.pillar_encoder = PillarEncoder(voxel_size=voxel_size, 
                                             point_cloud_range=point_cloud_range, 
-                                            in_channel=9, 
+                                            in_channel=10, 
                                             out_channel=64)
         self.backbone = Backbone(in_channel=64, 
                                  out_channels=[64, 128, 256], 
