@@ -1,10 +1,13 @@
-numba==0.48.0
-numpy==1.19.5
-open3d==0.14.1
-opencv_python==4.5.5.62
-PyYAML==6.0
-setuptools==58.0.4
+numba
+numpy
+open3d
+opencv-python
+PyYAML
+setuptools
 tensorboard
---extra-index-url https://download.pytorch.org/whl/cu111
-torch==1.8.1+cu111
-tqdm==4.62.3
+tqdm
+
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch
+torchvision
+torchaudio
