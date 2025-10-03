@@ -5,7 +5,7 @@ from tqdm import tqdm
 import pdb
 
 from pointpillars.utils import setup_seed
-from pointpillars.dataset import Kitti, get_dataloader
+from pointpillars.dataset import RadarDataset, get_dataloader
 from pointpillars.model import PointPillars
 from pointpillars.loss import Loss
 from torch.utils.tensorboard import SummaryWriter
@@ -21,9 +21,9 @@ def save_summary(writer, loss_dict, global_step, tag, lr=None, momentum=None):
 
 def main(args):
     setup_seed()
-    train_dataset = Kitti(data_root=args.data_root,
+    train_dataset = RadarDataset(data_root=args.data_root,
                           split='train')
-    val_dataset = Kitti(data_root=args.data_root,
+    val_dataset = RadarDataset(data_root=args.data_root,
                         split='val')
     train_dataloader = get_dataloader(dataset=train_dataset, 
                                       batch_size=args.batch_size, 
@@ -198,7 +198,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Configuration Parameters')
     parser.add_argument('--data_root', default='~/pointpillar-ds', 
-                        help='your data root for kitti')
+                        help='your data root for RadarDataset')
     parser.add_argument('--saved_path', default='pillar_logs')
     parser.add_argument('--batch_size', type=int, default=6)
     parser.add_argument('--num_workers', type=int, default=4)
