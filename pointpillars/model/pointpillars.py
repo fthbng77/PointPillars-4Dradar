@@ -261,15 +261,14 @@ class PointPillars(nn.Module):
         # train
         self.assigners = [
             {'pos_iou_thr': 0.5, 'neg_iou_thr': 0.35, 'min_iou_thr': 0.35},
-            {'pos_iou_thr': 0.5, 'neg_iou_thr': 0.35, 'min_iou_thr': 0.35},
-            {'pos_iou_thr': 0.6, 'neg_iou_thr': 0.45, 'min_iou_thr': 0.45},
+            {'pos_iou_thr': 0.5, 'neg_iou_thr': 0.35, 'min_iou_thr': 0.35}
         ]
 
         # val and test
         self.nms_pre = 100
         self.nms_thr = 0.01
         self.score_thr = 0.1
-        self.max_num = 50
+        self.max_num = 10
 
     def get_predicted_bboxes_single(self, bbox_cls_pred, bbox_pred, bbox_dir_cls_pred, anchors):
         '''
@@ -350,7 +349,7 @@ class PointPillars(nn.Module):
             ret_labels = ret_labels[final_inds]
             ret_scores = ret_scores[final_inds]
         result = {
-            'lidar_bboxes': ret_bboxes.detach().cpu().numpy(),
+            'radar_bboxes': ret_bboxes.detach().cpu().numpy(),
             'labels': ret_labels.detach().cpu().numpy(),
             'scores': ret_scores.detach().cpu().numpy()
         }
