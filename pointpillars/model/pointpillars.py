@@ -220,11 +220,11 @@ class Head(nn.Module):
 
 class PointPillars(nn.Module):
     def __init__(self,
-                 nclasses=3, 
+                 nclasses=2, 
                  voxel_size=[0.16, 0.16, 4],
-                 point_cloud_range=[0, -39.68, -3, 69.12, 39.68, 1],
-                 max_num_points=32,
-                 max_voxels=(16000, 40000)):
+                 point_cloud_range = [-3.0, 0.1, 0.0, 3.0, 7.0, 3.0],
+                 max_num_points=16,
+                 max_voxels=(4000, 8000)):
         super().__init__()
         self.nclasses = nclasses
         self.pillar_layer = PillarLayer(voxel_size=voxel_size, 
@@ -238,6 +238,7 @@ class PointPillars(nn.Module):
         self.backbone = Backbone(in_channel=64, 
                                  out_channels=[64, 128, 256], 
                                  layer_nums=[3, 5, 5])
+        
         self.neck = Neck(in_channels=[64, 128, 256], 
                          upsample_strides=[1, 2, 4], 
                          out_channels=[128, 128, 128])
