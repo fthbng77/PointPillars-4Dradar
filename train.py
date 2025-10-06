@@ -77,7 +77,6 @@ def main(args):
             batched_pts = data_dict['batched_pts']
             batched_gt_bboxes = data_dict['batched_gt_bboxes']
             batched_labels = data_dict['batched_labels']
-            batched_difficulty = data_dict['batched_difficulty']
             bbox_cls_pred, bbox_pred, bbox_dir_cls_pred, anchor_target_dict = \
                 pointpillars(batched_pts=batched_pts, 
                              mode='train',
@@ -148,7 +147,6 @@ def main(args):
                 batched_pts = data_dict['batched_pts']
                 batched_gt_bboxes = data_dict['batched_gt_bboxes']
                 batched_labels = data_dict['batched_labels']
-                batched_difficulty = data_dict['batched_difficulty']
                 bbox_cls_pred, bbox_pred, bbox_dir_cls_pred, anchor_target_dict = \
                     pointpillars(batched_pts=batched_pts, 
                                 mode='train',
@@ -197,12 +195,12 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Configuration Parameters')
-    parser.add_argument('--data_root', default='~/pointpillar-ds', 
+    parser.add_argument('--data_root', default='/home/fatih/Xena Vision/PointPillars-4Dradar/pointpillars/dataset/pointpillar-ds', 
                         help='your data root for RadarDataset')
     parser.add_argument('--saved_path', default='pillar_logs')
     parser.add_argument('--batch_size', type=int, default=6)
     parser.add_argument('--num_workers', type=int, default=4)
-    parser.add_argument('--nclasses', type=int, default=3)
+    parser.add_argument('--nclasses', type=int, default=2)
     parser.add_argument('--init_lr', type=float, default=0.00025)
     parser.add_argument('--max_epoch', type=int, default=160)
     parser.add_argument('--log_freq', type=int, default=8)
