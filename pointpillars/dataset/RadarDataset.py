@@ -38,8 +38,7 @@ class RadarDataset(Dataset):
         else:
             data_info = self.data_infos[index]
 
-        # Nokta bulutu ve ground truth
-        pts = data_info['points']  # (N,5) x,y,z,doppler,snr
+        pts = data_info['points'] 
         gt_bboxes_3d = data_info['gt_boxes_3d']
         gt_labels_3d = data_info['gt_labels_3d']
 

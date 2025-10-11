@@ -99,10 +99,9 @@ class PillarEncoder(nn.Module):
             cur_coors_idx = coors_batch[:, 0] == i
             cur_coors = coors_batch[cur_coors_idx, :]
             cur_features = pooling_features[cur_coors_idx]
-
-            canvas = torch.zeros((self.x_l, self.y_l, self.out_channel), dtype=torch.float32, device=device)
-            canvas[cur_coors[:, 1], cur_coors[:, 2]] = cur_features
-            canvas = canvas.permute(2, 1, 0).contiguous()
+            canvas = torch.zeros((self.y_l, self.x_l, self.out_channel), dtype=torch.float32, device=device)
+            canvas[cur_coors[:, 2], cur_coors[:, 1]] = cur_features
+            canvas = canvas.permute(2, 0, 1).contiguous()  # (C, Y, X)
             batched_canvas.append(canvas)
         batched_canvas = torch.stack(batched_canvas, dim=0) # (bs, in_channel, self.y_l, self.x_l)
         return batched_canvas
@@ -171,16 +170,17 @@ class Neck(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
     def forward(self, x):
-        '''
-        x: [(bs, 64, 248, 216), (bs, 128, 124, 108), (bs, 256, 62, 54)]
-        return: (bs, 384, 248, 216)
-        '''
         outs = []
+        target_size = x[0].shape[-2:]  # en yüksek çözünürlüklü katman boyutu
         for i in range(len(self.decoder_blocks)):
-            xi = self.decoder_blocks[i](x[i]) # (bs, 128, 248, 216)
+            xi = self.decoder_blocks[i](x[i])
+            # Eğer boyutlar farklıysa hizala
+            if xi.shape[-2:] != target_size:
+                xi = F.interpolate(xi, size=target_size, mode='bilinear', align_corners=False)
             outs.append(xi)
         out = torch.cat(outs, dim=1)
         return out
+
 
 
 class Head(nn.Module):
@@ -222,7 +222,7 @@ class PointPillars(nn.Module):
     def __init__(self,
                  nclasses=2, 
                  voxel_size = [0.08, 0.08, 0.4],
-                 point_cloud_range = [-3.0, 0.1, 0.0, 3.0, 7.0, 3.0],
+                 point_cloud_range = [-3.04, 0.0, 0.0, 3.04, 6.96, 3.0],
                  max_num_points=16,
                  max_voxels=(4000, 8000)):
 
@@ -405,6 +405,8 @@ class PointPillars(nn.Module):
         device = bbox_cls_pred.device
         feature_map_size = torch.tensor(list(bbox_cls_pred.size()[-2:]), device=device)
         anchors = self.anchors_generator.get_multi_anchors(feature_map_size)
+        print(f"Anchor map shape: {feature_map_size}")
+        print(f"Neck output shape: {x.shape[-2:]}")
         batched_anchors = [anchors for _ in range(batch_size)]
 
         if mode == 'train':

@@ -34,7 +34,7 @@ def collate_fn(list_data):
 
     return rt_data_dict
 
-def get_dataloader(dataset, batch_size, num_workers, shuffle=True, drop_last=False):
+def get_dataloader(dataset, batch_size, num_workers, shuffle=True, drop_last=True):
     collate = collate_fn
     dataloader = DataLoader(
         dataset=dataset,
