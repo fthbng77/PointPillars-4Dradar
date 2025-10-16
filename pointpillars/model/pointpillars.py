@@ -246,12 +246,12 @@ class PointPillars(nn.Module):
         self.head = Head(in_channel=384, n_anchors=2*nclasses, n_classes=nclasses)
         
         ranges = [
-            [-3.0, 0.1, 0.0, 3.0, 7.0, 3.0],  
-            [-3.0, 0.1, 0.0, 3.0, 7.0, 3.0]   
+            [-3.04, 0.0, 0.0, 3.04, 6.96, 3.0],  
+            [-3.04, 0.0, 0.0, 3.04, 6.96, 3.0]   
         ]
         sizes = [
-            [0.6, 0.6, 1.7],
-            [0.3, 0.3, 0.3]
+            [0.5, 0.5, 0.5],   
+            [0.5, 0.5, 1]
         ]        
         rotations=[0, 1.57]
         self.anchors_generator = Anchors(ranges=ranges, 
@@ -405,8 +405,8 @@ class PointPillars(nn.Module):
         device = bbox_cls_pred.device
         feature_map_size = torch.tensor(list(bbox_cls_pred.size()[-2:]), device=device)
         anchors = self.anchors_generator.get_multi_anchors(feature_map_size)
-        print(f"Anchor map shape: {feature_map_size}")
-        print(f"Neck output shape: {x.shape[-2:]}")
+        #print(f"Anchor map shape: {feature_map_size}")
+        #print(f"Neck output shape: {x.shape[-2:]}")
         batched_anchors = [anchors for _ in range(batch_size)]
 
         if mode == 'train':

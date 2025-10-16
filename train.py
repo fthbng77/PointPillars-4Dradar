@@ -50,18 +50,22 @@ def main(args):
         base_momentum=0.95 * 0.895, max_momentum=0.95, div_factor=10
     )
 
-    # --- Log & Checkpoint klasörleri ---
+    # --- Log & Checkpoint files ---
     os.makedirs(os.path.join(args.saved_path, 'summary'), exist_ok=True)
     os.makedirs(os.path.join(args.saved_path, 'checkpoints'), exist_ok=True)
     writer = SummaryWriter(os.path.join(args.saved_path, 'summary'))
 
-    # --- Eğitim Döngüsü ---
+    # --- Train Loop ---
     for epoch in range(args.max_epoch):
         print(f"\n========== EPOCH {epoch + 1}/{args.max_epoch} ==========")
         pointpillars.train()
         train_step = 0
 
         for batch_idx, data_dict in enumerate(tqdm(train_loader)):
+
+            if data_dict is None:
+                continue
+
             if device.type == "cuda":
                 data_dict = move_to_cuda(data_dict)
 
@@ -141,9 +145,8 @@ def main(args):
         if (epoch + 1) % args.ckpt_freq_epoch == 0:
             ckpt_path = os.path.join(args.saved_path, 'checkpoints', f'epoch_{epoch+1}.pth')
             torch.save(pointpillars.state_dict(), ckpt_path)
-            print(f"[INFO] Checkpoint kaydedildi: {ckpt_path}")
+            #print(f"[INFO] Checkpoint kaydedildi: {ckpt_path}")
 
-        # --- Val ---
         if epoch % 2 != 0:
             pointpillars.eval()
             val_step = 0
@@ -174,12 +177,29 @@ def main(args):
                     if pos_idx.sum() == 0:
                         continue
 
+                    # =================== YENİ GÜVENLİ BLOK BAŞLANGIÇ ===================
+                    mask_shape = pos_idx.shape[0]
+                    tensor_shape = bbox_pred.shape[0]
+
+                    # Eğer boyutlar uyuşmuyorsa, hatayı raporla ve bu batch'i atla
+                    if mask_shape != tensor_shape:
+                        original_batch_size = len(data_dict['batched_pts'])
+                        effective_batch_size = anchor_target_dict['batched_labels'].shape[0]
+                        
+                        print(f"\n[WARN] Boyut uyuşmazlığı tespit edildi, batch atlanıyor.")
+                        print(f"       -> Modele giren batch boyutu: {original_batch_size}")
+                        print(f"       -> Modelin işlediği etkin boyut: {effective_batch_size}")
+                        print(f"       -> Sebep: Batch içinde boş veri örneği var.")
+                        continue # Bu hatalı batch'i atla ve döngüye devam et
+                    
+                    # Eğer boyutlar uyuşuyorsa, işlemlere güvenle devam et
                     bbox_pred = bbox_pred[pos_idx]
                     batched_bbox_reg = batched_bbox_reg[pos_idx]
                     bbox_pred[:, -1] = torch.sin(bbox_pred[:, -1]) * torch.cos(batched_bbox_reg[:, -1])
                     batched_bbox_reg[:, -1] = torch.cos(bbox_pred[:, -1]) * torch.sin(batched_bbox_reg[:, -1])
                     bbox_dir_cls_pred = bbox_dir_cls_pred[pos_idx]
                     batched_dir_labels = batched_dir_labels[pos_idx]
+                    # ==================== YENİ GÜVENLİ BLOK BİTİŞ =====================
 
                     num_cls_pos = (batched_bbox_labels < args.nclasses).sum()
                     bbox_cls_pred = bbox_cls_pred[batched_label_weights > 0]
@@ -209,11 +229,11 @@ if __name__ == '__main__':
     parser.add_argument('--data_root', default='/home/fatih/Xena Vision/PointPillars-4Dradar/pointpillars/dataset/pointpillar-ds',
                         help='RadarDataset dizini')
     parser.add_argument('--saved_path', default='pillar_logs')
-    parser.add_argument('--batch_size', type=int, default=6)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--nclasses', type=int, default=2)
     parser.add_argument('--init_lr', type=float, default=0.00025)
-    parser.add_argument('--max_epoch', type=int, default=160)
+    parser.add_argument('--max_epoch', type=int, default=20)
     parser.add_argument('--log_freq', type=int, default=8)
     parser.add_argument('--ckpt_freq_epoch', type=int, default=20)
     parser.add_argument('--no_cuda', action='store_true', help='CUDA kapalı olsun mu')

@@ -23,7 +23,6 @@ class RadarDataset(Dataset):
         self.split = split
         self.pts_prefix = pts_prefix
 
-        # radar_infos_x.pkl dosyası listeler içeriyor
         self.data_infos = read_pickle(os.path.join(data_root, f'radar_infos_{split}.pkl'))
 
         if isinstance(self.data_infos, dict):

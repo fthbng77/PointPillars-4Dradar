@@ -64,7 +64,7 @@ class Anchors():
                                        anchor_size=sizes[i], 
                                        rotations=rotations)
             multi_anchors.append(anchors[:, :, None, :, :])
-            print(f"[DEBUG] anchors shape: {anchors.shape}")
+            #print(f"[DEBUG] anchors shape: {anchors.shape}") Buraya dvamlı giriyormuuş
         multi_anchors = torch.cat(multi_anchors, dim=2)
 
         return multi_anchors
